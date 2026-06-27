@@ -1,0 +1,878 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#f7f6f3">
+<title>Brain Reboot</title>
+<style>
+  :root{
+    --bg:#f7f6f3; --card:#ffffff; --fg:#1b1b19; --muted:#8d8d85;
+    --line:#ecebe6; --soft:#f1f0ec; --soft2:#e8e7e2;
+    --good:#2e7d54; --good-soft:#e7f3ec; --warm:#bd7d24;
+    --shadow:0 1px 2px rgba(0,0,0,.04), 0 6px 16px rgba(0,0,0,.04);
+  }
+  html[data-theme="dark"]{
+    --bg:#121211; --card:#1d1d1b; --fg:#f0efeb; --muted:#9a9a92;
+    --line:#2b2b28; --soft:#232321; --soft2:#2c2c29;
+    --good:#62c08a; --good-soft:#1d3528; --warm:#e0a23f;
+    --shadow:0 1px 2px rgba(0,0,0,.3), 0 8px 20px rgba(0,0,0,.25);
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{margin:0;background:var(--bg);color:var(--fg);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    font-size:16px;line-height:1.5;-webkit-font-smoothing:antialiased}
+  .app{max-width:480px;margin:0 auto;min-height:100vh;position:relative;
+    padding-bottom:calc(80px + env(safe-area-inset-bottom))}
+  header{position:sticky;top:0;background:var(--bg);z-index:5;
+    padding:18px 20px 12px;display:flex;align-items:flex-end;gap:12px}
+  header .hi{font-size:20px;font-weight:600;letter-spacing:-.01em}
+  header .date{font-size:13px;color:var(--muted);margin-top:1px}
+  .ava{width:38px;height:38px;border-radius:50%;background:var(--fg);color:var(--bg);
+    display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:600;flex:none}
+  main{padding:4px 20px 20px;animation:fade .28s ease}
+  @keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+  h2{font-size:12px;font-weight:600;color:var(--muted);text-transform:uppercase;
+    letter-spacing:.06em;margin:24px 2px 12px}
+  h2:first-child{margin-top:8px}
+  .progress{margin:6px 2px 18px}
+  .progress .lbl{display:flex;justify-content:space-between;font-size:13px;color:var(--muted);margin-bottom:7px}
+  .bar{height:7px;background:var(--soft2);border-radius:99px;overflow:hidden}
+  .bar > i{display:block;height:100%;background:var(--good);border-radius:99px;transition:width .45s cubic-bezier(.2,.8,.2,1)}
+  .card{background:var(--card);border-radius:16px;box-shadow:var(--shadow);padding:16px;margin-bottom:12px}
+  .item{display:flex;align-items:center;gap:14px}
+  .item .name{font-size:16px;font-weight:500}
+  .item .sub{font-size:13px;color:var(--muted);margin-top:2px}
+  .chev{color:var(--muted);display:flex;align-items:center;background:none;border:none;cursor:pointer}
+  .chev svg{width:20px;height:20px}
+  .check{width:30px;height:30px;border-radius:50%;border:2px solid var(--soft2);flex:none;
+    display:flex;align-items:center;justify-content:center;cursor:pointer;background:var(--card);
+    transition:background .15s ease, border-color .15s ease, transform .15s ease}
+  .check svg{width:17px;height:17px;stroke:#fff;stroke-width:3;fill:none;opacity:0;transform:scale(.5);
+    transition:opacity .15s ease, transform .15s ease}
+  .check.on{background:var(--good);border-color:var(--good)}
+  .check.on svg{opacity:1;transform:scale(1)}
+  .check.pop{transform:scale(1.18)}
+  textarea{font-family:inherit;font-size:16px;width:100%;border:none;background:var(--soft);
+    border-radius:12px;padding:12px 14px;color:var(--fg);resize:none;outline:none;transition:background .15s ease}
+  textarea:focus{background:var(--soft2)}
+  input{font-family:inherit;font-size:16px;width:100%;border:1px solid var(--line);
+    border-radius:12px;padding:12px 14px;background:var(--card);color:var(--fg);outline:none}
+  input:focus{border-color:var(--muted)}
+  .cmt{font-size:14px;background:var(--soft);border:none;border-radius:10px;padding:9px 12px;width:100%;color:var(--fg);outline:none;font-family:inherit}
+  button{font-family:inherit;cursor:pointer;border:none;background:none;color:inherit}
+  .btn{background:var(--soft);border-radius:11px;padding:10px 16px;font-size:14px;font-weight:500;color:var(--fg);transition:transform .12s ease, background .15s ease}
+  .btn:active{transform:scale(.96)}
+  .btn.prim{background:var(--fg);color:var(--bg)}
+  .btn.ghost{background:transparent;border:1px solid var(--line)}
+  .btn.full{width:100%;padding:14px;font-size:15px}
+  .btn.sm{padding:6px 12px;font-size:13px;border-radius:9px}
+  .link{background:none;border:none;color:var(--muted);font-size:13px;font-weight:500;cursor:pointer;padding:0}
+  .ava-sm{width:34px;height:34px;border-radius:50%;background:var(--soft);color:var(--muted);
+    display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:600;flex:none}
+  .ava-me{background:var(--fg);color:var(--bg)}
+  .pill{display:inline-flex;align-items:center;gap:4px;font-size:12px;color:var(--warm);font-weight:600}
+  .pill svg{width:13px;height:13px}
+  .chip{display:inline-block;font-size:11px;font-weight:600;padding:2px 8px;border-radius:99px;background:var(--soft);color:var(--muted);margin-right:5px}
+  .chip.grp{background:var(--good-soft);color:var(--good)}
+  .tag{font-size:12px;font-weight:600;padding:3px 9px;border-radius:99px;background:var(--soft);color:var(--muted)}
+  .tag.good{background:var(--good-soft);color:var(--good)}
+  .fpill{display:inline-block;font-size:12px;font-weight:600;padding:3px 10px;border-radius:99px;border:1px solid var(--line);color:var(--muted);cursor:pointer;background:var(--card)}
+  .wkdots{display:flex;gap:6px;margin-top:12px}
+  .wkdots .d{flex:1;text-align:center}
+  .wkdots .dot{width:22px;height:22px;border-radius:50%;border:1.5px solid var(--soft2);margin:0 auto 4px;display:flex;align-items:center;justify-content:center}
+  .wkdots .dot.on{background:var(--good);border-color:var(--good)}
+  .wkdots .dot.today{border-color:var(--fg);border-width:2px}
+  .wkdots .dot svg{width:12px;height:12px;stroke:#fff;stroke-width:3;fill:none}
+  .wkdots .lab{font-size:10px;color:var(--muted)}
+  .muted{color:var(--muted)}
+  .hint{font-size:12px;color:var(--muted);margin-top:8px;text-align:center}
+  .save-hint{font-size:12px;color:var(--good);opacity:0;transition:opacity .25s ease;margin-top:6px}
+  .save-hint.show{opacity:1}
+  .empty{text-align:center;color:var(--muted);font-size:14px;padding:40px 16px;line-height:1.7}
+  .empty .big{font-size:34px;margin-bottom:6px}
+  .hidden{display:none!important}
+  .menu{position:absolute;top:62px;right:16px;background:var(--card);border:0.5px solid var(--line);
+    border-radius:12px;box-shadow:var(--shadow);padding:6px;z-index:30;min-width:184px}
+  .menu button{display:block;width:100%;text-align:left;padding:11px 12px;border-radius:8px;font-size:14px;color:var(--fg)}
+  .menu button:active{background:var(--soft)}
+  .celebrate{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;z-index:40;pointer-events:none}
+  .celebrate .cbox{background:var(--card);border:0.5px solid var(--line);box-shadow:var(--shadow);
+    border-radius:18px;padding:22px 28px;text-align:center;animation:pop .45s cubic-bezier(.2,1.5,.4,1)}
+  .celebrate .big{font-size:42px}
+  @keyframes pop{from{transform:scale(.6);opacity:0}to{transform:scale(1);opacity:1}}
+  .done-banner{background:var(--good-soft);color:var(--good);border-radius:14px;padding:14px 16px;font-weight:600;display:flex;align-items:center;gap:8px;margin-bottom:14px}
+  nav{position:fixed;bottom:0;left:0;right:0;background:var(--card);border-top:1px solid var(--line);padding-bottom:env(safe-area-inset-bottom)}
+  nav .inner{max-width:480px;margin:0 auto;display:flex}
+  nav button{flex:1;padding:11px 0 9px;display:flex;flex-direction:column;align-items:center;gap:4px;color:var(--muted);font-size:11px;font-weight:500;transition:color .15s ease}
+  nav button.on{color:var(--fg)}
+  nav svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:1.7;transition:transform .15s ease}
+  nav button.on svg{transform:translateY(-1px)}
+  .ob{position:fixed;inset:0;background:var(--bg);z-index:20;display:flex;flex-direction:column;
+    justify-content:flex-start;overflow-y:auto;padding:48px 32px 40px;max-width:480px;margin:0 auto}
+  .ob .logo{font-size:30px;font-weight:700;letter-spacing:-.02em;margin:0 0 10px}
+  .ob-h{font-size:24px;font-weight:700;letter-spacing:-.01em;margin:0 0 8px}
+  .ob p{color:var(--muted);font-size:15px;margin:0 0 22px;line-height:1.6}
+  .ob-section{font-size:16px;font-weight:600;margin:6px 2px 2px}
+  .ob-expl{font-size:13px;color:var(--muted);margin:2px 2px 8px;line-height:1.5}
+  .ob-cat{font-size:12px;font-weight:600;color:var(--muted);margin:14px 2px 2px;text-transform:uppercase;letter-spacing:.04em}
+  .ob-chip{display:inline-flex;align-items:center;gap:8px;background:var(--soft);border-radius:99px;padding:7px 12px;margin:8px 8px 0 0;font-size:13px}
+  .codebox{display:flex;align-items:center;gap:10px;background:var(--soft);border-radius:12px;padding:12px 14px;margin-top:10px}
+  .codebox .code{font-size:15px;font-weight:700;letter-spacing:.02em;flex:1;word-break:break-all}
+  .post{background:var(--card);border-radius:16px;box-shadow:var(--shadow);padding:16px;margin-bottom:12px}
+  .post .who{display:flex;align-items:center;gap:10px;margin-bottom:2px}
+  .post .text{font-size:16px;line-height:1.6;margin-top:10px}
+  .post .cmt-show{font-size:14px;color:var(--muted);margin-top:8px;font-style:italic}
+  .choice{display:flex;align-items:center;gap:10px;padding:10px 0;cursor:pointer}
+  .choice .box{width:22px;height:22px;border-radius:6px;border:2px solid var(--soft2);flex:none;display:flex;align-items:center;justify-content:center}
+  .choice.on .box{background:var(--good);border-color:var(--good)}
+  .choice .box svg{width:13px;height:13px;stroke:#fff;stroke-width:3;fill:none;opacity:0}
+  .choice.on .box svg{opacity:1}
+  .cmt-show{font-size:14px;color:var(--muted);margin-top:8px;font-style:italic}
+  .acc{border:1px solid var(--line);border-radius:12px;margin-bottom:8px;overflow:hidden}
+  .acc-h{display:flex;align-items:center;gap:10px;width:100%;background:var(--card);padding:13px 14px;font-size:15px;font-weight:500;color:var(--fg);cursor:pointer;text-align:left;border:none}
+  .acc-caret{display:flex;color:var(--muted);transition:transform .2s}
+  .acc-caret svg{width:18px;height:18px}
+  .acc-caret.open{transform:rotate(90deg)}
+  .acc-body{padding:2px 14px 8px}
+  details.note{margin-top:12px}
+  details.note summary{font-size:13px;color:var(--muted);cursor:pointer;list-style:none;display:inline-flex;align-items:center;gap:6px}
+  details.note summary::-webkit-details-marker{display:none}
+  details.note[open] summary{margin-bottom:8px}
+  .sugg-item{display:flex;align-items:center;gap:10px;width:100%;background:none;border:none;border-top:0.5px solid var(--line);padding:11px 0;font-size:15px;color:var(--fg);cursor:pointer}
+  .sugg-item:first-child{border-top:none}
+  .addplus{font-size:20px;color:var(--good);font-weight:600;line-height:1}
+</style>
+</head>
+<body>
+
+<div class="ob hidden" id="onboard">
+  <div id="ob1">
+    <div class="logo">Brain Reboot</div>
+    <p>Keep track of your habits and thoughts each day – and see how your friends
+       are doing and what they wrote. No competition, ever.</p>
+    <input id="ob-name" placeholder="Your name" autocomplete="off">
+    <div style="height:14px"></div>
+    <button class="btn prim full" onclick="ob.toStep2()">Next</button>
+  </div>
+  <div id="ob2" class="hidden">
+    <div class="ob-h">What do you want to track?</div>
+    <p>Pick whatever fits you – you can change this anytime.</p>
+    <div id="ob-catalog"></div>
+    <div class="sub" style="margin:18px 2px 6px;color:var(--muted)">Add your own</div>
+    <div style="display:flex;gap:6px;margin-bottom:8px">
+      <button class="btn sm prim" id="cty-journal" onclick="ob.customType='journal';ob.syncCustomType()">Journal</button>
+      <button class="btn sm" id="cty-habit" onclick="ob.customType='habit';ob.syncCustomType()">Habit</button>
+    </div>
+    <div style="display:flex;gap:8px">
+      <input id="ob-custom" placeholder="e.g. Meditation" autocomplete="off">
+      <button class="btn" onclick="ob.addCustom()">+</button>
+    </div>
+    <div style="height:18px"></div>
+    <button class="btn prim full" onclick="ob.toStep3()">Next</button>
+    <button class="link" style="width:100%;margin-top:12px" onclick="ob.back2()">Back</button>
+  </div>
+  <div id="ob3" class="hidden">
+    <div class="ob-h">Almost done!</div>
+    <p>You'll add friends in a moment in the “Friends” tab – using their invite
+       code. Then you'll see how you're each doing and what you wrote on the
+       topics you share.</p>
+    <button class="btn prim full" onclick="ob.finish()">Let's go</button>
+    <button class="link" style="width:100%;margin-top:12px" onclick="ob.back3()">Back</button>
+  </div>
+</div>
+
+<div class="ob hidden" id="auth">
+  <div class="logo">Brain Reboot</div>
+  <p id="auth-sub">Sign in – or create a new account.</p>
+  <input id="auth-email" type="email" placeholder="Email" autocomplete="email">
+  <div style="height:10px"></div>
+  <input id="auth-pw" type="password" placeholder="Password (at least 6 characters)" autocomplete="current-password">
+  <div class="hint" id="auth-flash" style="text-align:left;color:#c0392b;min-height:1.1em"></div>
+  <button class="btn prim full" style="margin-top:8px" onclick="authSubmit()" id="auth-go">Sign in</button>
+  <button class="link" style="width:100%;margin-top:14px" onclick="authToggle()" id="auth-switch">No account yet? Sign up</button>
+</div>
+
+<div class="app">
+  <header>
+    <div style="flex:1">
+      <div class="hi" id="greet">Brain Reboot</div>
+      <div class="date" id="todayLabel"></div>
+    </div>
+    <div class="ava" id="meAva" onclick="toggleMenu(event)" title="Einstellungen" style="cursor:pointer">?</div>
+    <div class="menu hidden" id="menu">
+      <button onclick="toggleTheme()"><span id="theme-label">Dark mode</span></button>
+      <button onclick="signOut()">Sign out</button>
+    </div>
+  </header>
+
+  <main>
+    <section id="view-heute"></section>
+    <section id="view-feed" class="hidden"></section>
+    <section id="view-themen" class="hidden"></section>
+    <section id="view-freunde" class="hidden"></section>
+    <section id="view-verlauf" class="hidden"></section>
+    <section id="view-detail" class="hidden"></section>
+  </main>
+
+  <nav>
+    <div class="inner">
+      <button class="on" id="nav-heute" onclick="go('heute')">
+        <svg viewBox="0 0 24 24"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>Today</button>
+      <button id="nav-feed" onclick="go('feed')">
+        <svg viewBox="0 0 24 24"><path d="M19 14c1.5-1.5 3-3.4 3-5.5A3.5 3.5 0 0 0 12 6 3.5 3.5 0 0 0 2 8.5c0 2.1 1.5 4 3 5.5l7 7 7-7Z"/></svg>Feed</button>
+      <button id="nav-themen" onclick="go('themen')">
+        <svg viewBox="0 0 24 24"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></svg>Topics</button>
+      <button id="nav-freunde" onclick="go('freunde')">
+        <svg viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M19 8v6M22 11h-6"/></svg>Friends</button>
+      <button id="nav-verlauf" onclick="go('verlauf')">
+        <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="17" rx="2.5"/><path d="M3 9h18M8 2v4M16 2v4"/></svg>History</button>
+    </div>
+  </nav>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+/* =========================================================================
+   Brain Reboot – Online-Version (Supabase: Login + echte Freunde/Einträge)
+   ========================================================================= */
+const SUPABASE_URL='https://izxiwmrnkaxpysvucegc.supabase.co';
+const SUPABASE_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Iml6eGl3bXJua2F4cHlzdnVjZWdjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI1Njk4MjAsImV4cCI6MjA5ODE0NTgyMH0.ypO3W9lipPflqbJEx1B6dqLDexi4vdUYbMTOUC8R8Xk';
+const sb=window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+let me=null;        // eingeloggte User-ID
+function save(){}    // Daten liegen online; Aktionen schreiben direkt in die DB
+
+// Theme (Standard: hell; Dunkelmodus optional)
+let theme=localStorage.getItem('br_theme')||'light';
+function applyTheme(t){ theme=t; if(t==='dark') document.documentElement.setAttribute('data-theme','dark'); else document.documentElement.removeAttribute('data-theme');
+  localStorage.setItem('br_theme',t); const mc=document.querySelector('meta[name="theme-color"]'); if(mc) mc.setAttribute('content', t==='dark'?'#121211':'#f7f6f3'); }
+applyTheme(theme);
+function toggleMenu(ev){ if(ev) ev.stopPropagation(); const m=document.getElementById('menu'); m.classList.toggle('hidden');
+  const l=document.getElementById('theme-label'); if(l) l.textContent=(theme==='dark'?'Heller Modus':'Dunkler Modus'); }
+function toggleTheme(){ applyTheme(theme==='dark'?'light':'dark'); const l=document.getElementById('theme-label'); if(l) l.textContent=(theme==='dark'?'Heller Modus':'Dunkler Modus'); }
+document.addEventListener('click',function(e){ const m=document.getElementById('menu'); if(m&&!m.classList.contains('hidden')&&!m.contains(e.target)&&e.target.id!=='meAva'){ m.classList.add('hidden'); } });
+document.addEventListener('keydown',function(e){ if(e.key!=='Enter') return; const id=(e.target&&e.target.id)||'';
+  if(id==='auth-email'||id==='auth-pw'){ e.preventDefault(); authSubmit(); }
+  else if(id==='ob-name'){ e.preventDefault(); ob.toStep2(); }
+  else if(id==='ob-custom'){ e.preventDefault(); ob.addCustom(); }
+  else if(id==='add-friend'){ e.preventDefault(); addFriend(); }
+  else if(id==='new-name'){ e.preventDefault(); createTopic(); } });
+
+const ICON={
+  check:'<svg viewBox="0 0 24 24"><path d="M5 13l4 4L19 7"/></svg>',
+  chev:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m9 6 6 6-6 6"/></svg>',
+  flame:'<svg viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M12 2c1 3-2 4-2 7a2 2 0 0 0 4 0c2 2 3 4 3 6a5 5 0 0 1-10 0c0-4 5-6 5-13Z"/></svg>'
+};
+function todayKey(){ const d=new Date(); return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
+function fmtDate(k){ const [y,m,d]=k.split('-').map(Number); return new Date(y,m-1,d).toLocaleDateString('en-GB',{weekday:'long',day:'numeric',month:'long'}); }
+function fmtShort(k){ const [y,m,d]=k.split('-').map(Number); return new Date(y,m-1,d).toLocaleDateString('en-GB',{weekday:'short',day:'numeric',month:'short'}); }
+
+// Suggestion catalog. `key` is the stable identifier used to match friends on
+// shared topics; the display name can be translated/renamed freely.
+const CATALOG=[
+  // Habits · Less screen time
+  {key:'reels',cat:'Less screen time',name:'No short videos (Reels, TikTok, Shorts)',type:'habit',freq:'daily',pre:true},
+  {key:'episode',cat:'Less screen time',name:'At most 1 episode or movie',type:'habit',freq:'daily'},
+  {key:'phonenight',cat:'Less screen time',name:'Put the phone away in the evening',type:'habit',freq:'daily'},
+  // Habits · Body & health
+  {key:'sport',cat:'Body & health',name:'Did some exercise',type:'habit',freq:3},
+  {key:'walk',cat:'Body & health',name:'Went for a walk',type:'habit',freq:'daily'},
+  {key:'water',cat:'Body & health',name:'Drank enough water',type:'habit',freq:'daily'},
+  {key:'early',cat:'Body & health',name:'Got up early',type:'habit',freq:'daily'},
+  {key:'sugar',cat:'Body & health',name:'No sugar or sweets',type:'habit',freq:'daily'},
+  {key:'alcohol',cat:'Body & health',name:'No alcohol',type:'habit',freq:'daily'},
+  // Habits · Focus & productivity
+  {key:'focus',cat:'Focus & productivity',name:'Worked or studied with focus',type:'habit',freq:'daily'},
+  {key:'meditate',cat:'Focus & productivity',name:'Meditated',type:'habit',freq:'daily'},
+  {key:'tidy',cat:'Focus & productivity',name:'Tidied up',type:'habit',freq:3},
+  // Habits · Relationships
+  {key:'call',cat:'Relationships',name:'Called someone',type:'habit',freq:1},
+  {key:'meet',cat:'Relationships',name:'Spent time with family or friends',type:'habit',freq:2},
+  // Habits · Learning & reading
+  {key:'read',cat:'Learning & reading',name:'Read',type:'habit',freq:'daily'},
+  {key:'practice',cat:'Learning & reading',name:'Practiced something (language, instrument …)',type:'habit',freq:'daily'},
+  // Journal
+  {key:'jlearned',cat:'Learning & insight',name:'Something I learned today',type:'journal',pre:true},
+  {key:'jgrateful',cat:'Gratitude & positives',name:"Something I'm grateful for",type:'journal',pre:true},
+  {key:'jproductive',cat:'Reflection',name:'Something productive I got done',type:'journal'},
+  {key:'jproud',cat:'Gratitude & positives',name:"Something I'm proud of today",type:'journal'},
+  {key:'jbest',cat:'Gratitude & positives',name:'My favorite moment today',type:'journal'},
+  {key:'jchallenge',cat:'Reflection',name:'What challenged me today',type:'journal'},
+  {key:'jmind',cat:'Reflection',name:"What's on my mind",type:'journal'},
+  {key:'jtomorrow',cat:'Planning',name:'What I want to do differently tomorrow',type:'journal'}
+];
+
+let state=null;
+
+async function init(){
+  document.getElementById('todayLabel').textContent=fmtDate(todayKey());
+  const {data:{session}}=await sb.auth.getSession();
+  if(session){ me=session.user.id; await afterLogin(); }
+  else document.getElementById('auth').classList.remove('hidden');
+}
+let authMode='login';
+function authToggle(){ authMode=(authMode==='login'?'signup':'login');
+  document.getElementById('auth-go').textContent=(authMode==='login'?'Sign in':'Create account');
+  document.getElementById('auth-switch').textContent=(authMode==='login'?'No account yet? Sign up':'Already have an account? Sign in');
+  document.getElementById('auth-sub').textContent=(authMode==='login'?'Sign in.':'Create a new account.');
+  document.getElementById('auth-flash').textContent=''; }
+async function authSubmit(){
+  const email=document.getElementById('auth-email').value.trim();
+  const pw=document.getElementById('auth-pw').value;
+  const flash=document.getElementById('auth-flash'); flash.textContent='';
+  if(!email||!pw){ flash.textContent='Please enter your email and password.'; return; }
+  const res = authMode==='signup' ? await sb.auth.signUp({email,password:pw}) : await sb.auth.signInWithPassword({email,password:pw});
+  if(res.error){ flash.textContent=res.error.message; return; }
+  if(!res.data.session){ flash.textContent='Please turn off email confirmation in Supabase (or confirm your email).'; return; }
+  me=res.data.session.user.id;
+  document.getElementById('auth').classList.add('hidden');
+  await afterLogin();
+}
+async function signOut(){ await sb.auth.signOut(); location.reload(); }
+async function afterLogin(){
+  const {data:prof}=await sb.from('profiles').select('name,invite_code').eq('id',me).maybeSingle();
+  if(!prof || !prof.name){
+    state={profile:{name:'',invite_code:prof?prof.invite_code:''},friends:[],topics:[],entries:{}};
+    document.getElementById('onboard').classList.remove('hidden');
+    return;
+  }
+  await loadAll(); startApp();
+}
+function startApp(){
+  document.getElementById('greet').textContent=state.profile.name;
+  document.getElementById('meAva').textContent=(state.profile.name||'?').charAt(0).toUpperCase();
+  go('heute');
+}
+const convFreq=f=> (f==null?undefined:(f==='daily'?'daily':(isNaN(+f)?f:+f)));
+async function loadAll(){
+  const {data:prof}=await sb.from('profiles').select('name,invite_code').eq('id',me).maybeSingle();
+  state={profile:{name:prof?prof.name:'',invite_code:prof?prof.invite_code:''},friends:[],topics:[],entries:{}};
+  const {data:tps}=await sb.from('topics').select('*').eq('user_id',me).order('created_at');
+  state.topics=(tps||[]).map(t=>({id:t.id,key:t.key,name:t.name,type:t.type,freq:t.type==='habit'?convFreq(t.freq):undefined,shared:t.shared,peers:[]}));
+  const {data:ents}=await sb.from('entries').select('*').eq('user_id',me);
+  state.entries={};
+  (ents||[]).forEach(e=>{ if(!state.entries[e.day])state.entries[e.day]={}; state.entries[e.day][e.topic_id]={done:e.done,comment:e.comment,text:e.text}; });
+  const {data:fr}=await sb.from('friendships').select('friend_id').eq('user_id',me);
+  const ids=(fr||[]).map(x=>x.friend_id);
+  if(ids.length){
+    const {data:profs}=await sb.from('profiles').select('id,name').in('id',ids);
+    state.friends=(profs||[]).map(p=>({id:p.id,name:p.name||'Freund'}));
+    const nameById={}; state.friends.forEach(f=>nameById[f.id]=f.name);
+    const {data:ftps}=await sb.from('topics').select('*').in('user_id',ids);
+    const {data:fents}=await sb.from('entries').select('*').in('user_id',ids);
+    const entByTopic={}; (fents||[]).forEach(e=>{ (entByTopic[e.topic_id]=entByTopic[e.topic_id]||[]).push(e); });
+    const today=todayKey();
+    state.topics.forEach(mt=>{
+      if(!mt.shared||!mt.key) return;
+      (ftps||[]).forEach(ft=>{
+        if(ft.key!==mt.key) return;
+        const es=entByTopic[ft.id]||[];
+        const te=es.find(e=>e.day===today);
+        const peer={name:nameById[ft.user_id]||'Freund'};
+        if(mt.type==='journal') peer.text=te?te.text:''; else { peer.done=te?te.done===true:false; peer.comment=te?te.comment:''; }
+        peer.streak=computeStreak(es,mt.type);
+        if(isWeekly(mt)){ peer.wd=computeWeekDone(es); peer.freq=convFreq(ft.freq); }
+        peer.history=es.filter(e=>e.day!==today && (mt.type==='journal'?(e.text&&e.text.trim()):e.done===true))
+          .sort((a,b)=>b.day.localeCompare(a.day)).slice(0,5)
+          .map(e=> mt.type==='journal'?{when:fmtShort(e.day),text:e.text}:{when:fmtShort(e.day),comment:e.comment,done:e.done});
+        mt.peers.push(peer);
+      });
+    });
+  }
+}
+function computeStreak(es,type){ const byDay={}; es.forEach(e=>byDay[e.day]=e); let n=0; const d=new Date();
+  for(let i=0;i<400;i++){ const k=keyOf(d); const e=byDay[k]; const ok=e&&(type==='habit'?e.done===true:(e.text&&e.text.trim())); if(ok)n++; else if(i>0)break; d.setDate(d.getDate()-1);} return n; }
+function computeWeekDone(es){ const days=weekDates(0); const byDay={}; es.forEach(e=>byDay[e.day]=e); return days.filter(k=>byDay[k]&&byDay[k].done===true).length; }
+
+// ---- Einstiegs-Setup ----
+const ob={
+  name:'', picks:{}, freqs:{}, custom:[], customType:'journal', openCats:{},
+  habitCats:['Less screen time','Body & health','Focus & productivity','Relationships','Learning & reading'],
+  journalCats:['Gratitude & positives','Learning & insight','Reflection','Planning'],
+  toStep2(){ const n=document.getElementById('ob-name').value.trim(); if(!n) return; ob.name=n;
+    CATALOG.forEach(c=>{ if(c.pre) ob.picks[c.key]=true; });
+    ob.openCats={};
+    ob.habitCats.forEach((cat,i)=>{ if(CATALOG.some(c=>c.type==='habit'&&c.cat===cat&&ob.picks[c.key])) ob.openCats['h'+i]=true; });
+    ob.journalCats.forEach((cat,i)=>{ if(CATALOG.some(c=>c.type==='journal'&&c.cat===cat&&ob.picks[c.key])) ob.openCats['j'+i]=true; });
+    ob.renderCatalog(); document.getElementById('ob1').classList.add('hidden'); document.getElementById('ob2').classList.remove('hidden'); document.querySelector('.ob').scrollTo?.(0,0); },
+  toggleCat(key){ ob.openCats[key]=!ob.openCats[key]; ob.renderCatalog(); },
+  renderCatalog(){
+    const habitRow=c=>{ const f=ob.freqs[c.key]||c.freq||'daily';
+      return `<label class="choice ${ob.picks[c.key]?'on':''}" onclick="ob.toggle('${c.key}',this)">
+        <span class="box">${ICON.check}</span><span style="flex:1">${esc(c.name)}</span>
+        <span class="fpill" onclick="event.stopPropagation();ob.cycleCatFreq('${c.key}')">${freqText(f)}</span></label>`; };
+    const jRow=c=>`<label class="choice ${ob.picks[c.key]?'on':''}" onclick="ob.toggle('${c.key}',this)">
+        <span class="box">${ICON.check}</span><span style="flex:1">${esc(c.name)}</span></label>`;
+    const block=(key,label,items,rowFn)=>{ const sel=items.filter(c=>ob.picks[c.key]).length; const open=!!ob.openCats[key];
+      return `<div class="acc">
+        <button type="button" class="acc-h" onclick="ob.toggleCat('${key}')">
+          <span class="acc-caret ${open?'open':''}">${ICON.chev}</span>
+          <span style="flex:1">${esc(label)}</span>
+          ${sel?`<span class="chip grp" style="margin:0">${sel}</span>`:''}
+        </button>
+        ${open?`<div class="acc-body">${items.map(rowFn).join('')}</div>`:''}
+      </div>`; };
+    let html='<div class="ob-section">Habits</div><div class="ob-expl">Things you want to do regularly – you check them off (tap to set frequency, daily = 7×/week). A short note is optional.</div>';
+    ob.habitCats.forEach((cat,i)=>{ const items=CATALOG.filter(c=>c.type==='habit'&&c.cat===cat); if(items.length) html+=block('h'+i,cat,items,habitRow); });
+    html+='<div class="ob-section" style="margin-top:22px">Journal</div><div class="ob-expl">Thoughts about your day – write whenever you feel like it. This is what your friends love reading most.</div>';
+    ob.journalCats.forEach((cat,i)=>{ const items=CATALOG.filter(c=>c.type==='journal'&&c.cat===cat); if(items.length) html+=block('j'+i,cat,items,jRow); });
+    if(ob.custom.length) html+='<div class="ob-cat">Your own</div>'
+      +ob.custom.map((c,i)=>`<label class="choice on"><span class="box">${ICON.check}</span>
+        <span style="flex:1">${esc(c.name)} <span class="muted">· ${c.type==='habit'?'Habit':'Journal'}</span></span>
+        ${c.type==='habit'?`<span class="fpill" onclick="event.stopPropagation();ob.cycleCustomFreq(${i})">${freqText(c.freq||'daily')}</span>`:''}</label>`).join('');
+    document.getElementById('ob-catalog').innerHTML=html;
+  },
+  cycleCatFreq(key){ const c=CATALOG.find(x=>x.key===key); const cur=ob.freqs[key]||c.freq||'daily';
+    ob.freqs[key]=FREQS[(FREQS.indexOf(cur)+1)%FREQS.length]; ob.picks[key]=true; ob.renderCatalog(); },
+  cycleCustomFreq(i){ const c=ob.custom[i]; c.freq=FREQS[(FREQS.indexOf(c.freq||'daily')+1)%FREQS.length]; ob.renderCatalog(); },
+  toggle(key,node){ if(ob.picks[key]){ delete ob.picks[key]; node.classList.remove('on'); } else { ob.picks[key]=true; node.classList.add('on'); } },
+  syncCustomType(){ document.getElementById('cty-journal').classList.toggle('prim',ob.customType==='journal'); document.getElementById('cty-habit').classList.toggle('prim',ob.customType==='habit'); },
+  addCustom(){ const inp=document.getElementById('ob-custom'); const v=inp.value.trim(); if(!v) return;
+    ob.custom.push({name:v,type:ob.customType,freq:ob.customType==='habit'?'daily':undefined}); inp.value=''; ob.renderCatalog(); },
+  toStep3(){ document.getElementById('ob2').classList.add('hidden'); document.getElementById('ob3').classList.remove('hidden'); document.querySelector('.ob').scrollTo?.(0,0); },
+  back2(){ document.getElementById('ob2').classList.add('hidden'); document.getElementById('ob1').classList.remove('hidden'); },
+  back3(){ document.getElementById('ob3').classList.add('hidden'); document.getElementById('ob2').classList.remove('hidden'); },
+  async finish(){
+    await sb.from('profiles').upsert({id:me,name:ob.name});
+    const rows=[];
+    CATALOG.filter(c=>ob.picks[c.key]).forEach(c=>{ const r={key:c.key,name:c.name,type:c.type,shared:true}; if(c.type==='habit') r.freq=String(ob.freqs[c.key]||c.freq||'daily'); rows.push(r); });
+    ob.custom.forEach(c=>{ const r={name:c.name,type:c.type,shared:true}; if(c.type==='habit') r.freq=String(c.freq||'daily'); rows.push(r); });
+    if(rows.length){ const {error}=await sb.from('topics').insert(rows); if(error){ alert('Error: '+error.message); return; } }
+    document.getElementById('onboard').classList.add('hidden');
+    await loadAll(); startApp();
+  }
+};
+
+let current='heute';
+function go(view){
+  current=view;
+  ['heute','feed','themen','freunde','verlauf','detail'].forEach(v=>document.getElementById('view-'+v).classList.toggle('hidden',v!==view));
+  ['heute','feed','themen','freunde','verlauf'].forEach(v=>document.getElementById('nav-'+v).classList.toggle('on',v===view));
+  animateMain();
+  if(view==='heute') renderHeute();
+  if(view==='feed'){ renderFeed(); loadAll().then(()=>{ if(current==='feed') renderFeed(); }); }
+  if(view==='themen') renderThemen();
+  if(view==='freunde') renderFreunde();
+  if(view==='verlauf') renderVerlauf();
+}
+function animateMain(){ const m=document.querySelector('main'); m.style.animation='none'; void m.offsetWidth; m.style.animation=''; }
+
+/* ---- Eintrag-Helfer ---- */
+function getEntry(id,day){ day=day||todayKey(); return (state.entries[day]&&state.entries[day][id])||{}; }
+async function patchEntry(id,patch){ const d=todayKey(); if(!state.entries[d])state.entries[d]={}; state.entries[d][id]=Object.assign({},state.entries[d][id],patch);
+  const c=state.entries[d][id];
+  await sb.from('entries').upsert({user_id:me,topic_id:id,day:d,done:c.done??null,comment:c.comment??null,text:c.text??null},{onConflict:'user_id,topic_id,day'}); }
+function isDone(t,day){ const e=getEntry(t.id,day); return t.type==='habit'? e.done===true : (typeof e.text==='string'&&e.text.trim()!==''); }
+function streak(t){ let n=0; const d=new Date();
+  for(let i=0;i<400;i++){ const k=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+    if(isDone(t,k)) n++; else if(i>0) break; d.setDate(d.getDate()-1); }
+  return n; }
+
+/* ---- Wochen-Helfer ---- */
+const FREQS=['daily',1,2,3,4,5,6]; // 'daily' = 7×/Woche
+function mondayOf(d){ const x=new Date(d); const day=(x.getDay()+6)%7; x.setDate(x.getDate()-day); x.setHours(0,0,0,0); return x; }
+function keyOf(d){ return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
+function weekDates(offset){ const m=mondayOf(new Date()); m.setDate(m.getDate()+offset*7); return Array.from({length:7},(_,i)=>{ const d=new Date(m); d.setDate(m.getDate()+i); return keyOf(d); }); }
+function isWeekly(t){ return t.type==='habit' && typeof t.freq==='number'; }
+function isDailyExpected(t){ return t.type==='journal' || (t.type==='habit' && !isWeekly(t)); }
+function weekDoneOffset(t,offset){ return weekDates(offset).filter(k=>{ const e=state.entries[k]&&state.entries[k][t.id]; return e&&e.done===true; }).length; }
+function weekDone(t){ return weekDoneOffset(t,0); }
+function weekStreak(t){ let n=0; if(weekDoneOffset(t,0)>=t.freq) n++; for(let o=1;o<200;o++){ if(weekDoneOffset(t,-o)>=t.freq) n++; else break; } return n; }
+function freqLabel(t){ return (!t.freq||t.freq==='daily')?'Daily':(t.freq+'× per week'); }
+function freqText(f){ return (!f||f==='daily')?'Daily':(f+'×/wk'); }
+function weekDotsHTML(t){ const days=weekDates(0), labs=['Mon','Tue','Wed','Thu','Fri','Sat','Sun'], tk=todayKey();
+  return '<div class="wkdots">'+days.map((k,i)=>{ const e=state.entries[k]&&state.entries[k][t.id]; const on=e&&e.done===true;
+    return `<div class="d"><div class="dot ${on?'on':''} ${k===tk?'today':''}">${on?ICON.check:''}</div><div class="lab">${labs[i]}</div></div>`; }).join('')+'</div>'; }
+function shareChip(t){ return t.shared?'<span class="chip grp">with friends</span>':'<span class="chip">just for me</span>'; }
+function peersOf(t){ return t.shared?(t.peers||[]):[]; }
+
+/* ---- Heute ---- */
+function renderHeute(){
+  const el=document.getElementById('view-heute');
+  if(state.topics.length===0){ el.innerHTML='<div class="empty"><div class="big">🌱</div>No topics yet.<br>Add your first one in the “Topics” tab.</div>'; return; }
+  const daily=state.topics.filter(isDailyExpected);
+  const weekly=state.topics.filter(isWeekly);
+  let html='';
+  if(daily.length){
+    const done=daily.filter(t=>isDone(t)).length;
+    if(done===daily.length){ html+=`<div class="done-banner">✨ Day complete – everything logged</div>`; }
+    else{ html+=`<div class="progress"><div class="lbl"><span>Today</span><span id="prog-lbl">${done} of ${daily.length} logged</span></div>
+      <div class="bar"><i style="width:${Math.round(done/daily.length*100)}%"></i></div></div>`; }
+  }
+  daily.forEach(t=>{
+    const st=streak(t), e=getEntry(t.id);
+    const flame=st>0?`<span class="pill">${ICON.flame}${st}</span>`:'';
+    if(t.type==='habit'){
+      const on=e.done===true;
+      html+=`<div class="card">
+        <div class="item">
+          <div class="check ${on?'on':''}" onclick="toggleHabit('${t.id}',this)">${ICON.check}</div>
+          <div style="flex:1;cursor:pointer" onclick="openDetail('${t.id}')">
+            <div class="name">${esc(t.name)} ${flame}</div>
+            <div style="margin-top:4px">${shareChip(t)}</div>
+          </div>
+          <button class="chev" onclick="openDetail('${t.id}')" aria-label="Feed">${ICON.chev}</button>
+        </div>
+        <details class="note" ${e.comment?'open':''}>
+          <summary>${e.comment?'Note':'+ Note'}</summary>
+          <input class="cmt" placeholder="short note…" value="${esc(e.comment||'')}" oninput="onField('${t.id}','comment',this.value)">
+          <div class="save-hint" id="sh-${t.id}">Saved</div>
+        </details>
+      </div>`;
+    }else{
+      html+=`<div class="card">
+        <div class="item" style="margin-bottom:10px">
+          <div style="flex:1;cursor:pointer" onclick="openDetail('${t.id}')">
+            <div class="name">${esc(t.name)} ${flame}</div>
+            <div style="margin-top:4px">${shareChip(t)}</div>
+          </div>
+          <button class="chev" onclick="openDetail('${t.id}')" aria-label="Feed">${ICON.chev}</button>
+        </div>
+        <textarea rows="2" placeholder="Today…" oninput="onField('${t.id}','text',this.value)">${esc(e.text||'')}</textarea>
+        <div class="save-hint" id="sh-${t.id}">Saved</div>
+      </div>`;
+    }
+  });
+  if(weekly.length){
+    html+='<h2>This week</h2>';
+    weekly.forEach(t=>{
+      const e=getEntry(t.id), on=e.done===true, wd=weekDone(t), ws=weekStreak(t), reached=wd>=t.freq;
+      const flame=ws>0?`<span class="pill">${ICON.flame}${ws} wk</span>`:'';
+      html+=`<div class="card">
+        <div class="item">
+          <div class="check ${on?'on':''}" onclick="toggleHabit('${t.id}',this)">${ICON.check}</div>
+          <div style="flex:1;cursor:pointer" onclick="openDetail('${t.id}')">
+            <div class="name">${esc(t.name)} ${flame}</div>
+            <div class="sub" style="margin-top:3px"><b style="color:${reached?'var(--good)':'var(--fg)'}">${wd} of ${t.freq}</b> this week${reached?' · goal reached':''}</div>
+          </div>
+          <button class="chev" onclick="openDetail('${t.id}')" aria-label="Feed">${ICON.chev}</button>
+        </div>
+        ${weekDotsHTML(t)}
+        <div style="margin-top:10px">${shareChip(t)}</div>
+        <details class="note" ${e.comment?'open':''}>
+          <summary>${e.comment?'Note':'+ Note'}</summary>
+          <input class="cmt" placeholder="short note…" value="${esc(e.comment||'')}" oninput="onField('${t.id}','comment',this.value)">
+          <div class="save-hint" id="sh-${t.id}">Saved</div>
+        </details>
+      </div>`;
+    });
+  }
+  el.innerHTML=html;
+  dayComplete=isDayComplete();
+}
+function refreshProgress(){
+  const daily=state.topics.filter(isDailyExpected); if(!daily.length) return;
+  const done=daily.filter(t=>isDone(t)).length;
+  const bar=document.querySelector('.bar > i'); if(bar) bar.style.width=Math.round(done/daily.length*100)+'%';
+  const lbl=document.getElementById('prog-lbl'); if(lbl) lbl.textContent=done+' of '+daily.length+' logged';
+}
+function toggleHabit(id,node){
+  const t=state.topics.find(x=>x.id===id);
+  const e=getEntry(id); const nv=!(e.done===true);
+  patchEntry(id,{done:nv});
+  if(isWeekly(t)){ renderHeute(); return; }
+  node.classList.toggle('on',nv); node.classList.add('pop'); setTimeout(()=>node.classList.remove('pop'),150);
+  refreshProgress();
+  if(isDayComplete()){ maybeCelebrate(); setTimeout(renderHeute,400); } else { dayComplete=false; }
+}
+let jt={};
+function onField(id,field,val){
+  if(jt[id]) clearTimeout(jt[id]);
+  jt[id]=setTimeout(()=>{
+    patchEntry(id,{[field]:val});
+    if(field==='text'){ refreshProgress(); maybeCelebrate(); }
+    const h=document.getElementById('sh-'+id); if(h){ h.classList.add('show'); setTimeout(()=>h.classList.remove('show'),1400); }
+  },400);
+}
+let dayComplete=false;
+function isDayComplete(){ const d=state.topics.filter(isDailyExpected); return d.length>0 && d.every(t=>isDone(t)); }
+function maybeCelebrate(){ const now=isDayComplete(); if(now&&!dayComplete) celebrate(); dayComplete=now; }
+function celebrate(){ const el=document.createElement('div'); el.className='celebrate';
+  el.innerHTML='<div class="cbox"><div class="big">✨</div><div style="font-size:16px;font-weight:600;margin-top:8px">Day complete!</div><div class="sub" style="margin-top:2px">Nice to have you here.</div></div>';
+  document.body.appendChild(el); setTimeout(()=>{ el.style.transition='opacity .3s'; el.style.opacity='0'; setTimeout(()=>el.remove(),300); },1500); }
+
+/* ---- Feed: was Freunde heute geschrieben haben ---- */
+function enteredSomethingToday(){ return state.topics.some(t=>{ const e=getEntry(t.id); return (t.type==='journal'&&e.text&&e.text.trim())||(t.type==='habit'&&e.done===true); }); }
+function renderFeed(){
+  const el=document.getElementById('view-feed');
+  if(!enteredSomethingToday()){
+    el.innerHTML=`<div class="empty" style="padding:56px 18px"><div class="big">🔒</div>
+      <div style="font-size:16px;color:var(--fg);font-weight:600;margin:6px 0 8px">You first, then the feed</div>
+      <div>Log something today – then you'll see at a glance what your friends wrote.</div>
+      <div style="height:18px"></div><button class="btn prim" onclick="go('heute')">Log now</button></div>`;
+    return;
+  }
+  const map={};
+  state.topics.forEach(t=>{ peersOf(t).forEach(p=>{
+    let content=null;
+    if(t.type==='journal'&&p.text) content={topic:t.name,type:'journal',text:p.text};
+    else if(t.type==='habit'&&(p.done===true||p.comment)) content={topic:t.name,type:'habit',done:p.done===true,comment:p.comment,weekly:isWeekly(t)};
+    if(!content) return;
+    if(!map[p.name]) map[p.name]={name:p.name,items:[]};
+    map[p.name].items.push(content);
+  }); });
+  const friends=Object.values(map).filter(fr=>fr.items.length);
+  if(!friends.length){
+    el.innerHTML='<h2>Today</h2><div class="empty"><div class="big">🌱</div>No one has shared anything yet.<br>As soon as your friends log shared topics, it shows up here.</div>';
+    return;
+  }
+  let html='<h2>What your friends wrote today</h2>';
+  friends.forEach(fr=>{
+    const items=fr.items.map(it=>{
+      if(it.type==='journal') return `<div style="margin-top:10px"><div class="sub" style="color:var(--muted)">${esc(it.topic)}</div><div class="text" style="margin-top:2px">${esc(it.text)}</div></div>`;
+      const tag=it.done?`<span class="tag good">done ✓</span>`:(it.weekly?'':`<span class="tag">open</span>`);
+      return `<div style="margin-top:10px"><div class="sub" style="color:var(--muted)">${esc(it.topic)} ${tag}</div>${it.comment?`<div class="cmt-show">„${esc(it.comment)}"</div>`:''}</div>`;
+    }).join('');
+    html+=`<div class="post"><div class="who">
+        <span class="ava-sm">${esc(fr.name.charAt(0))}</span>
+        <span class="name" style="flex:1">${esc(fr.name)}</span>
+      </div>${items}</div>`;
+  });
+  html+='<div class="hint">No competition – just for reading each other.</div>';
+  el.innerHTML=html;
+}
+
+/* ---- Themen ---- */
+let newType='habit', newFreq='daily', newShared=true;
+function renderThemen(){
+  const el=document.getElementById('view-themen');
+  let html='<h2>Your topics</h2>';
+  if(state.topics.length===0) html+='<div class="empty">No topics yet.</div>';
+  state.topics.forEach(t=>{
+    const freqPill=t.type==='habit'?`<span class="fpill" onclick="cycleFreq('${t.id}')" title="Change frequency">${freqLabel(t)}</span> `:'';
+    const sharePill=`<span class="${t.shared?'chip grp':'chip'}" style="cursor:pointer" onclick="toggleShared('${t.id}')">${t.shared?'with friends':'just for me'}</span>`;
+    html+=`<div class="card"><div class="item">
+        <div style="flex:1">
+          <div class="name" onclick="renameTopic('${t.id}')" style="cursor:pointer" title="Rename">${esc(t.name)} <span class="muted" style="font-size:13px">✎</span></div>
+          <div class="sub" style="margin-top:7px"><span class="tag ${t.type==='habit'?'':'good'}">${t.type==='habit'?'Habit':'Journal'}</span> ${freqPill}${sharePill}</div>
+        </div>
+        <button class="btn ghost sm" onclick="removeTopic('${t.id}','${esc(t.name)}')">Remove</button>
+      </div></div>`;
+  });
+  html+=suggestionsHTML();
+  html+=`<h2>New topic</h2>
+    <div class="card" id="create-card">
+      <input id="new-name" placeholder="Name, e.g. Get up early" autocomplete="off">
+      <div style="height:10px"></div>
+      <div style="display:flex;gap:10px;margin-bottom:8px">
+        <button class="btn" id="ty-habit" style="flex:1" onclick="pickType('habit')">Habit · Yes/No</button>
+        <button class="btn" id="ty-journal" style="flex:1" onclick="pickType('journal')">Journal · Text</button>
+      </div>
+      <div id="freq-row" style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
+        <span class="sub" style="color:var(--muted)">Frequency</span>
+        <span class="fpill" id="freq-pill" onclick="cycleNewFreq()">Daily</span>
+        <span class="sub" style="color:var(--muted)">(tap to change)</span>
+      </div>
+      <div style="display:flex;gap:10px;margin-bottom:10px">
+        <button class="btn" id="sh-friends" style="flex:1" onclick="pickShared(true)">With friends</button>
+        <button class="btn" id="sh-private" style="flex:1" onclick="pickShared(false)">Just for me</button>
+      </div>
+      <button class="btn prim full" onclick="createTopic()">Add topic</button>
+    </div>`;
+  el.innerHTML=html;
+  newFreq='daily'; newShared=true; pickType(newType); pickShared(true);
+}
+function pickType(t){ newType=t; const a=document.getElementById('ty-habit'),b=document.getElementById('ty-journal');
+  if(a&&b){ a.classList.toggle('prim',t==='habit'); b.classList.toggle('prim',t==='journal'); }
+  const fr=document.getElementById('freq-row'); if(fr) fr.style.display=(t==='habit')?'flex':'none'; }
+function pickShared(s){ newShared=s; const a=document.getElementById('sh-friends'),b=document.getElementById('sh-private');
+  if(a&&b){ a.classList.toggle('prim',s); b.classList.toggle('prim',!s); } }
+function cycleNewFreq(){ newFreq=FREQS[(FREQS.indexOf(newFreq)+1)%FREQS.length]; const p=document.getElementById('freq-pill'); if(p) p.textContent=(newFreq==='daily'?'Daily':newFreq+'× per week'); }
+function cycleFreq(id){ const t=state.topics.find(x=>x.id===id); t.freq=FREQS[(FREQS.indexOf(t.freq||'daily')+1)%FREQS.length]; sb.from('topics').update({freq:String(t.freq)}).eq('id',id); renderThemen(); }
+function toggleShared(id){ const t=state.topics.find(x=>x.id===id); t.shared=!t.shared; sb.from('topics').update({shared:t.shared}).eq('id',id); renderThemen(); }
+async function createTopic(){
+  const name=document.getElementById('new-name').value.trim(); if(!name) return;
+  const row={name,type:newType,shared:newShared}; if(newType==='habit') row.freq=String(newFreq);
+  const {data,error}=await sb.from('topics').insert(row).select().single();
+  if(error){ alert('Error: '+error.message); return; }
+  state.topics.push({id:data.id,key:null,name,type:newType,freq:newType==='habit'?newFreq:undefined,shared:newShared,peers:[]});
+  newFreq='daily'; newShared=true; go('heute');
+}
+function removeTopic(id,name){ if(!confirm('Remove “'+name+'”? Its entries will be deleted too.')) return; sb.from('topics').delete().eq('id',id); state.topics=state.topics.filter(t=>t.id!==id); renderThemen(); }
+function renameTopic(id){ const t=state.topics.find(x=>x.id===id); if(!t) return;
+  const nn=prompt('New name for this topic:', t.name); if(nn===null) return; const v=nn.trim(); if(!v) return;
+  t.name=v; sb.from('topics').update({name:v}).eq('id',id); renderThemen(); }
+let themenOpen={};
+function toggleThemenCat(key){ themenOpen[key]=!themenOpen[key]; renderThemen(); }
+async function addFromCatalog(catKey){ const c=CATALOG.find(x=>x.key===catKey); if(!c||state.topics.some(t=>t.key===c.key)) return;
+  const row={key:c.key,name:c.name,type:c.type,shared:true}; if(c.type==='habit') row.freq=String(c.freq||'daily');
+  const {error}=await sb.from('topics').insert(row);
+  if(error){ alert('Error: '+error.message); return; }
+  await loadAll(); renderThemen(); }
+function suggestionsHTML(){
+  const hCats=['Less screen time','Body & health','Focus & productivity','Relationships','Learning & reading'];
+  const jCats=['Gratitude & positives','Learning & insight','Reflection','Planning'];
+  const has=c=>state.topics.some(t=>t.key===c.key);
+  const block=(key,label,items)=>{ if(!items.length) return ''; const open=!!themenOpen[key];
+    return `<div class="acc"><button type="button" class="acc-h" onclick="toggleThemenCat('${key}')">
+      <span class="acc-caret ${open?'open':''}">${ICON.chev}</span><span style="flex:1">${esc(label)}</span><span class="chip" style="margin:0">${items.length}</span></button>
+      ${open?`<div class="acc-body">${items.map(c=>`<button type="button" class="sugg-item" onclick="addFromCatalog('${c.key}')">
+        <span style="flex:1;text-align:left">${esc(c.name)}</span><span class="muted" style="font-size:12px">${c.type==='habit'?freqText(c.freq||'daily'):'Journal'}</span><span class="addplus">+</span></button>`).join('')}</div>`:''}
+    </div>`; };
+  let hHtml=''; hCats.forEach((cat,i)=>{ hHtml+=block('th'+i,cat,CATALOG.filter(c=>c.type==='habit'&&c.cat===cat&&!has(c))); });
+  let jHtml=''; jCats.forEach((cat,i)=>{ jHtml+=block('tj'+i,cat,CATALOG.filter(c=>c.type==='journal'&&c.cat===cat&&!has(c))); });
+  let html='<h2>Add from suggestions</h2>';
+  if(!hHtml&&!jHtml) return html+'<div class="hint" style="text-align:left">You\'ve added all suggestions. You can create your own below.</div>';
+  if(hHtml) html+='<div class="ob-expl" style="margin:0 2px 10px">Habits</div>'+hHtml;
+  if(jHtml) html+='<div class="ob-expl" style="margin:14px 2px 10px">Journal</div>'+jHtml;
+  return html;
+}
+
+/* ---- Freunde ---- */
+function renderFreunde(){
+  const el=document.getElementById('view-freunde');
+  let html='<h2>Your friends</h2>';
+  if(state.friends.length===0) html+='<div class="empty"><div class="big">👋</div>No friends yet.<br>Enter a friend\'s invite code below.</div>';
+  state.friends.forEach(f=>{
+    const shared=state.topics.filter(t=>t.shared&&(t.peers||[]).some(p=>p.name===f.name)).length;
+    html+=`<div class="card"><div class="item">
+      <span class="ava-sm">${esc((f.name||'?').charAt(0))}</span>
+      <div style="flex:1"><div class="name">${esc(f.name)}</div><div class="sub">${shared} shared topics</div></div>
+      <button class="btn ghost sm" onclick="removeFriend('${f.id}','${esc(f.name)}')">Remove</button>
+    </div></div>`;
+  });
+  const code=esc(state.profile.invite_code||'…');
+  html+=`<h2>Add a friend</h2>
+    <div class="card">
+      <div style="display:flex;gap:10px">
+        <input id="add-friend" placeholder="Friend's invite code" autocomplete="off">
+        <button class="btn prim" onclick="addFriend()">Add</button>
+      </div>
+      <div class="hint" id="add-flash">Ask your friend for their code (it's shown at the bottom of their app).</div>
+    </div>
+    <h2>Your invite code</h2>
+    <div class="card">
+      <div class="codebox"><span class="code">${code}</span><button class="btn sm" onclick="copyText('${code}',this)">Copy</button></div>
+      <div class="hint">Share this code with friends so they can add you.</div>
+    </div>`;
+  el.innerHTML=html;
+}
+async function addFriend(){ const v=document.getElementById('add-friend').value.trim(); if(!v) return;
+  const flash=document.getElementById('add-flash');
+  const {error}=await sb.rpc('add_friend_by_code',{code:v});
+  if(error){ let m=error.message;
+    if(/eigener/i.test(m)) m="That's your own code.";
+    else if(/nicht gefunden/i.test(m)) m='Code not found – check it and try again.';
+    else m="Couldn't add friend. Please try again.";
+    if(flash) flash.textContent=m; return; }
+  await loadAll(); renderFreunde();
+  const f2=document.getElementById('add-flash'); if(f2) f2.textContent='Added ✓';
+}
+async function removeFriend(id,name){ if(!confirm('Remove “'+name+'” as a friend?')) return;
+  await sb.from('friendships').delete().eq('user_id',me).eq('friend_id',id);
+  await loadAll(); renderFreunde(); }
+function copyText(txt,btn){ navigator.clipboard?.writeText(txt); btn.textContent='Copied ✓'; }
+
+/* ---- Verlauf + Wochenrückblick ---- */
+function weeklyRecapHTML(){
+  const days=weekDates(0);
+  let journalCount=0, habitCount=0; const active=new Set(); const mine=[];
+  days.forEach(k=>{ const day=state.entries[k]; if(!day) return;
+    state.topics.forEach(t=>{ const e=day[t.id]; if(!e) return;
+      if(t.type==='journal'&&e.text&&e.text.trim()){ journalCount++; active.add(k); mine.push({topic:t.name,text:e.text}); }
+      if(t.type==='habit'&&e.done===true){ habitCount++; active.add(k); }
+    });
+  });
+  const wTotal=state.topics.filter(isWeekly).length;
+  const wMet=state.topics.filter(isWeekly).filter(t=>weekDone(t)>=t.freq).length;
+  const fr=[]; state.topics.forEach(t=>{ if(t.type==='journal') peersOf(t).forEach(p=>{ if(p.text) fr.push({name:p.name,topic:t.name,text:p.text}); }); });
+  const stat=(n,l)=>`<div style="min-width:64px"><div style="font-size:22px;font-weight:600">${n}</div><div class="sub">${l}</div></div>`;
+  const myHi=mine.slice(-3).reverse().map(h=>`<div style="margin-top:8px"><span class="sub" style="color:var(--muted)">${esc(h.topic)}</span><div style="font-size:14px">${esc(h.text)}</div></div>`).join('');
+  const frHi=fr.slice(0,2).map(h=>`<div style="margin-top:8px"><span class="sub" style="color:var(--muted)">${esc(h.name)} · ${esc(h.topic)}</span><div style="font-size:14px">${esc(h.text)}</div></div>`).join('');
+  return `<div class="card" style="border:1px solid var(--good)">
+    <div class="name" style="font-size:17px;margin-bottom:12px">Weekly recap</div>
+    <div style="display:flex;gap:16px;flex-wrap:wrap">
+      ${stat(active.size,'active days')}${stat(journalCount,'journal entries')}${stat(habitCount,'check-ins')}${wTotal?stat(wMet+'/'+wTotal,'weekly goals'):''}
+    </div>
+    ${myHi?`<div style="margin-top:16px"><div class="sub" style="color:var(--muted);font-weight:600">Your thoughts this week</div>${myHi}</div>`:''}
+    ${frHi?`<div style="margin-top:16px"><div class="sub" style="color:var(--muted);font-weight:600">From your friends</div>${frHi}</div>`:''}
+  </div>`;
+}
+function renderVerlauf(){
+  const el=document.getElementById('view-verlauf');
+  const days=Object.keys(state.entries).filter(d=>state.topics.some(t=>isDone(t,d))).sort().reverse();
+  let html='<h2>This week</h2>'+weeklyRecapHTML()+'<h2>History</h2>';
+  if(days.length===0){ el.innerHTML=html+'<div class="empty"><div class="big">📖</div>No entries yet.<br>Log your first topic today.</div>'; return; }
+  days.forEach(d=>{
+    let lines='';
+    state.topics.forEach(t=>{
+      const e=state.entries[d][t.id]; if(!e) return;
+      if(t.type==='habit'&&e.done===true) lines+=`<div class="sub" style="color:var(--good);margin-top:3px">✓ ${esc(t.name)}${e.comment?` <span class="muted">– ${esc(e.comment)}</span>`:''}</div>`;
+      if(t.type==='journal'&&e.text&&e.text.trim()) lines+=`<div style="font-size:14px;margin-top:5px"><span class="muted">${esc(t.name)}: </span>${esc(e.text)}</div>`;
+    });
+    html+=`<div class="card"><div class="sub" style="font-weight:600;color:var(--fg);margin-bottom:4px">${fmtDate(d)}</div>${lines||'<div class="sub">—</div>'}</div>`;
+  });
+  el.innerHTML=html;
+}
+
+/* ---- Thema-Detail (Feed + Frühere Tage) ---- */
+function openDetail(id){
+  const t=state.topics.find(x=>x.id===id); if(!t) return;
+  const el=document.getElementById('view-detail');
+  const weekly=isWeekly(t);
+  const locked = weekly ? weekDone(t)===0 : !isDone(t);
+  let body;
+  if(locked){
+    const msg = weekly ? "Do it once this week – then you'll see how your friends did."
+                       : "Log this topic today – then you'll see how your friends did.";
+    body=`<div class="empty" style="padding:50px 18px"><div class="big">🔒</div>
+      <div style="font-size:16px;color:var(--fg);font-weight:600;margin:6px 0 8px">You first, then the others</div>
+      <div>${msg}</div>
+      <div style="height:18px"></div><button class="btn prim" onclick="go('heute')">Log now</button></div>`;
+  }else{
+    const e=getEntry(t.id);
+    let me;
+    if(t.type==='journal') me={name:'You',me:true,text:e.text,streak:streak(t)};
+    else if(weekly) me={name:'You',me:true,weekly:true,wd:weekDone(t),wn:t.freq,comment:e.comment,streak:weekStreak(t)};
+    else me={name:'You',me:true,done:e.done===true,comment:e.comment,streak:streak(t)};
+    const peers=peersOf(t);
+    const people=[me,...peers];
+    let posts='';
+    people.forEach(p=>{
+      const st=p.streak>0?`<span class="pill">${ICON.flame}${p.streak}${weekly?' wk':''}</span>`:'';
+      let content='';
+      if(t.type==='journal'){ content=p.text?`<div class="text">${esc(p.text)}</div>`:'<div class="cmt-show">— nothing written —</div>'; }
+      else if(weekly){
+        let tag;
+        if(p.me) tag=`<span class="tag good">${p.wd} of ${p.wn} this week</span>`;
+        else if(p.freq) tag=`<span class="tag good">${(p.wd!=null?p.wd:0)} of ${p.freq} this week</span>`;
+        else tag=`<span class="tag good">in it this week</span>`;
+        content=`<div style="margin-top:8px">${tag}</div>`+(p.comment?`<div class="cmt-show">“${esc(p.comment)}”</div>`:'');
+      }
+      else{ content=`<div style="margin-top:8px"><span class="tag ${p.done?'good':''}">${p.done?'done ✓':'not done'}</span></div>`+(p.comment?`<div class="cmt-show">“${esc(p.comment)}”</div>`:''); }
+      posts+=`<div class="post"><div class="who">
+          <span class="ava-sm ${p.me?'ava-me':''}">${esc(p.name.charAt(0))}</span>
+          <span class="name" style="flex:1">${esc(p.name)}</span>${st}
+        </div>${content}</div>`;
+    });
+    let note='';
+    if(!t.shared) note='<div class="hint">This topic is private – only you can see it.</div>';
+    else if(peers.length===0) note='<div class="hint">No one has joined this topic yet. Invite friends (Friends tab).</div>';
+    else note='<div class="hint">No competition – just for reading each other.</div>';
+    // Frühere Tage: eigene (echt) + Freunde (Demo-Historie)
+    const histItems=[];
+    Object.keys(state.entries).filter(k=>k!==todayKey()).sort().reverse().forEach(k=>{
+      const en=state.entries[k]&&state.entries[k][t.id]; if(!en) return;
+      if(t.type==='journal'&&en.text&&en.text.trim()) histItems.push(`<div style="margin-top:10px"><div class="sub" style="color:var(--muted)">${fmtShort(k)} · You</div><div style="font-size:14px">${esc(en.text)}</div></div>`);
+      else if(t.type==='habit'&&en.done===true) histItems.push(`<div style="margin-top:10px"><div class="sub" style="color:var(--muted)">${fmtShort(k)} · You <span class="tag good">done ✓</span></div>${en.comment?`<div class="cmt-show">“${esc(en.comment)}”</div>`:''}</div>`);
+    });
+    peers.forEach(p=>{ (p.history||[]).forEach(h=>{
+      histItems.push(`<div style="margin-top:10px"><div class="sub" style="color:var(--muted)">${esc(h.when)} · ${esc(p.name)}</div>${h.text?`<div style="font-size:14px">${esc(h.text)}</div>`:(h.comment?`<div class="cmt-show">„${esc(h.comment)}"</div>`:'')}</div>`);
+    }); });
+    const histBlock = histItems.length?`<h2>Earlier days</h2><div class="card">${histItems.join('')}</div>`:'';
+    body=`<h2>How did it go?</h2>${posts}${note}${histBlock}`;
+  }
+  el.innerHTML=`<div style="display:flex;align-items:center;gap:12px;margin:8px 0 14px">
+      <button class="btn" onclick="go('heute')" style="padding:8px 12px">←</button>
+      <div style="flex:1"><div style="font-size:19px;font-weight:600">${esc(t.name)}</div>
+      <div style="margin-top:4px">${shareChip(t)}</div></div>
+    </div>${body}`;
+  ['heute','feed','themen','freunde','verlauf'].forEach(v=>document.getElementById('view-'+v).classList.add('hidden'));
+  el.classList.remove('hidden'); animateMain();
+}
+
+function esc(s){ return String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
+init();
+</script>
+</body>
+</html>
